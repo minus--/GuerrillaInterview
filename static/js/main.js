@@ -1,5 +1,20 @@
+function set_language(language_code, editor) {
+    var assignment_id = $('#assignment_id').val();
+    var url = '/sample/'+ assignment_id +'/' + language_code;
+    $.ajax({
+        type: 'GET',
+        url: url,
+        dataType: 'json',
+        contentType: "application/json",
+        accepts: "application/json",
+        success: function(data) {
+            editor.getDoc().setValue(data['sample']);
+        }
+    });
+}
+
 /*
-    Document initialization
+ Document initialization
  */
 $(document).ready(function() {
     var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
@@ -10,9 +25,10 @@ $(document).ready(function() {
         extraKeys: {"Ctrl-Q": "toggleComment"}
         });
     var language_code = 1;
+    set_language(language_code,editor);
     $('#language-select').change(function(){
         var selection = $(this).val();
-        editor.setOption("mode",selection );
+        editor.setOption("mode", selection);
         switch (selection){
             case 'text/x-csharp':
                 language_code = 1;
@@ -27,18 +43,7 @@ $(document).ready(function() {
                 language_code = 1;
                 break;
         };
-        var assignment_id = $('#assignment_id').val();
-        var url = '/sample/'+ assignment_id +'/' + language_code;
-        $.ajax({
-            type: 'GET',
-            url: url,
-            dataType: 'json',
-            contentType: "application/json",
-            accepts: "application/json",
-            success: function(data) {
-                editor.getDoc().setValue(data['sample']);
-            }
-        });
+        set_language(language_code,editor);
     });
 
     $('#run_button').on('click', function(e) {
