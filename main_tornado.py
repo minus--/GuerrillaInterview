@@ -9,19 +9,16 @@ from sqlalchemy import create_engine,Table, MetaData, Column, Index, String, Int
 import hashlib
 import base64
 import uuid
+import config
 
-
-engine = create_engine('mysql://my_user:my_password@127.0.0.1/coding_interview')
-
-
-salt = 'whrfbpUjQuibLL5SdFzE2w=='
+engine = create_engine(config.sql_connection_string)
 
 
 def check_permission(password, username):
-    user_details = engine.execute("SELECT email, password FROM users WHERE email = '%s'" % username).fetchone()
+    user_details = engine.execute("SELECT email, password, salt FROM users WHERE email = '%s'" % username).fetchone()
     if user_details is not None:
         t_sha = hashlib.sha512()
-        t_sha.update(password+salt)
+        t_sha.update(password+user_details.salt)
         hashed_password = base64.urlsafe_b64encode(t_sha.digest())
         if hashed_password == user_details.password:
             return True
@@ -65,7 +62,8 @@ class IndexHandler(tornado.web.RequestHandler):
     """
     def get(self,assignment_id=1):
         try:
-            assignment = engine.execute('SELECT title, details FROM coding_assignment WHERE id = %s' % assignment_id).fetchone()
+            assignment = engine.execute('SELECT title, details FROM coding_assignment WHERE id = %s'
+                                        % assignment_id).fetchone()
             self.render("index.html", title=assignment.title, details=assignment.details, assignment_id= assignment_id)
         except Exception as ex:
             print ex
@@ -117,7 +115,7 @@ class Application(tornado.web.Application):
         settings = {
             "template_path": 'templates',
             "static_path": 'static',
-            "cookie_secret": "MY COOKIE SECRET FOR TEST",
+            "cookie_secret": config.cookie_secret,
             "login_url": "/login"
             }
         tornado.web.Application.__init__(self, handlers, debug=True, **settings)
