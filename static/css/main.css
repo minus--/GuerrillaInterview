@@ -1,0 +1,29 @@
+
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+
+.dataTables_wrapper {
+    margin: 10px;
+}
+
+td.details-control {
+    background: url('/static/images/details_open.png') no-repeat center center;
+    cursor: pointer;
+}
+
+tr.shown td.details-control {
+    background: url('/static/images/details_close.png') no-repeat center center;
+}
+
+
+
+
+
+
+
+
+
+
+
