@@ -3,6 +3,7 @@ __author__ = 'Amine Kerkeni'
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
+from tornado.web import url
 import json
 import requests
 from sqlalchemy import create_engine,Table, MetaData, Column, Index, String, Integer, Text
@@ -44,10 +45,10 @@ class LoginHandler(tornado.web.RequestHandler):
         auth = check_permission(password, username)
         if auth:
             self.set_current_user(username)
-            self.redirect(self.get_argument("next", u"/1"))
+            self.redirect(self.get_argument("next", u"assignment/1"))
         else:
             error_msg = u"?error=" + tornado.escape.url_escape("Login incorrect")
-            self.redirect(u"/login/" + error_msg)
+            self.redirect(u"/login")
 
     def set_current_user(self, user):
         if user:
@@ -56,7 +57,14 @@ class LoginHandler(tornado.web.RequestHandler):
             self.clear_cookie("user")
 
 
-class IndexHandler(tornado.web.RequestHandler):
+class AssignmentListHandler(tornado.web.RequestHandler):
+    """
+    Standard web handler that returns the index page
+    """
+    def get(self,assignment_id=1):
+        self.render("list.html")
+
+class AssignmentHandler(tornado.web.RequestHandler):
     """
     Standard web handler that returns the index page
     """
@@ -64,7 +72,7 @@ class IndexHandler(tornado.web.RequestHandler):
         try:
             assignment = engine.execute('SELECT title, details FROM coding_assignment WHERE id = %s'
                                         % assignment_id).fetchone()
-            self.render("index.html", title=assignment.title, details=assignment.details, assignment_id= assignment_id)
+            self.render("assignment.html", title=assignment.title, details=assignment.details, assignment_id= assignment_id)
         except Exception as ex:
             print ex
 
@@ -106,8 +114,9 @@ class Application(tornado.web.Application):
     """
     def __init__(self):
         handlers = [
-            (r'/([0-9]+)', IndexHandler),
-            (r'/login', LoginHandler),
+            url(r'/assignment/([0-9]+)', AssignmentHandler, name='assignment'),
+            url(r'/list', AssignmentListHandler, name='list'),
+            url(r'/login', LoginHandler, name='login'),
             (r'/sample/([0-9]+)/([0-9]+)', DefaultSampleHandler),
             (r'/run', RextesterHandler),
             ]
