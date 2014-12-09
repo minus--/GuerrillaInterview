@@ -28,7 +28,11 @@ def check_permission(password, username):
     return False
 
 
-class LoginHandler(tornado.web.RequestHandler):
+class BaseHandler(tornado.web.RequestHandler):
+        def get_current_user(self):
+            return self.get_secure_cookie("user")
+
+class LoginHandler(BaseHandler):
     """
     User login handler
     """
@@ -57,17 +61,19 @@ class LoginHandler(tornado.web.RequestHandler):
             self.clear_cookie("user")
 
 
-class AssignmentListHandler(tornado.web.RequestHandler):
+class AssignmentListHandler(BaseHandler):
     """
     Standard web handler that returns the index page
     """
     def get(self,assignment_id=1):
         self.render("list.html")
 
-class AssignmentHandler(tornado.web.RequestHandler):
+
+class AssignmentHandler(BaseHandler):
     """
     Standard web handler that returns the index page
     """
+    @tornado.web.authenticated
     def get(self,assignment_id=1):
         try:
             assignment = engine.execute('SELECT title, details FROM coding_assignment WHERE id = %s'
@@ -107,6 +113,10 @@ class RextesterHandler(tornado.web.RequestHandler):
         self.set_header("Content-Type", "application/json")
         self.write(r.json())
 
+class LogoutHandler(BaseHandler):
+    def get(self):
+        self.clear_cookie("user")
+        self.redirect(self.get_argument("next", "/login"))
 
 class Application(tornado.web.Application):
     """
@@ -117,6 +127,7 @@ class Application(tornado.web.Application):
             url(r'/assignment/([0-9]+)', AssignmentHandler, name='assignment'),
             url(r'/list', AssignmentListHandler, name='list'),
             url(r'/login', LoginHandler, name='login'),
+            url(r'/logout', LogoutHandler, name="logout"),
             (r'/sample/([0-9]+)/([0-9]+)', DefaultSampleHandler),
             (r'/run', RextesterHandler),
             ]
