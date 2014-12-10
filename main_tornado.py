@@ -32,6 +32,7 @@ class BaseHandler(tornado.web.RequestHandler):
         def get_current_user(self):
             return self.get_secure_cookie("user")
 
+
 class LoginHandler(BaseHandler):
     """
     User login handler
@@ -67,7 +68,9 @@ class AssignmentListHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self,assignment_id=1):
-        self.render("list.html")
+        assignments = engine.execute('SELECT id, title, level FROM coding_assignment LIMIT 0,10').fetchall()
+
+        self.render("list.html",assignment_list=assignments)
 
 
 class AssignmentHandler(BaseHandler):
@@ -84,7 +87,7 @@ class AssignmentHandler(BaseHandler):
             print ex
 
 
-class DefaultSampleHandler(tornado.web.RequestHandler):
+class DefaultSampleHandler(BaseHandler):
     """
     Standard web handler that returns the index page
     """
@@ -100,7 +103,7 @@ class DefaultSampleHandler(tornado.web.RequestHandler):
             print ex
 
 
-class RextesterHandler(tornado.web.RequestHandler):
+class RextesterHandler(BaseHandler):
     """
     This handler will relay post messages to rextester API in order to avoid cross domain issues.
     Rextester API is an online service for compiling/running code
@@ -116,10 +119,15 @@ class RextesterHandler(tornado.web.RequestHandler):
         self.set_header("Content-Type", "application/json")
         self.write(r.json())
 
+
 class LogoutHandler(BaseHandler):
+    """
+    User logout handler
+    """
     def get(self):
         self.clear_cookie("user")
         self.redirect(self.get_argument("next", "/login"))
+
 
 class Application(tornado.web.Application):
     """
