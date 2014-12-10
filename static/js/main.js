@@ -46,6 +46,32 @@ $(document).ready(function() {
         set_language(language_code,editor);
     });
 
+    $('#submit_button').on('click', function(e) {
+        e.preventDefault();
+        alert("submit");
+
+        var user_code = editor.getValue();
+        var message = {
+            code: user_code
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: '/assignment/1',
+            dataType: 'json',
+            data: JSON.stringify(message),
+            contentType: "application/json",
+            accepts: "application/json",
+            success: function (data) {
+                console.log("saved");
+            }, error: function (data) {
+                console.log("not saved");
+            }, complete: function (data) {
+
+            }
+        });
+    });
+
     $('#run_button').on('click', function(e) {
         e.preventDefault();
         var user_code = editor.getValue();

@@ -11,6 +11,7 @@ import hashlib
 import base64
 import uuid
 import config
+import time
 
 engine = create_engine(config.sql_connection_string)
 
@@ -79,13 +80,25 @@ class AssignmentHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self,assignment_id=1):
+        self.set_secure_cookie("question", str(time.time()))
         try:
             assignment = engine.execute('SELECT title, details FROM coding_assignment WHERE id = %s'
                                         % assignment_id).fetchone()
+
             self.render("assignment.html", title=assignment.title, details=assignment.details, assignment_id= assignment_id)
         except Exception as ex:
             print ex
 
+    @tornado.web.authenticated
+    def post(self,assignment_id=1):
+        timer = self.get_secure_cookie("question")
+        if (time.time() - float(timer)) > 30:
+            print "Expired"
+        else:
+            print "Did not expire"
+
+        self.clear_cookie("question")
+        self.redirect("/list")
 
 class DefaultSampleHandler(BaseHandler):
     """
