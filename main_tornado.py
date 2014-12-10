@@ -65,6 +65,7 @@ class AssignmentListHandler(BaseHandler):
     """
     Standard web handler that returns the index page
     """
+    @tornado.web.authenticated
     def get(self,assignment_id=1):
         self.render("list.html")
 
@@ -87,6 +88,7 @@ class DefaultSampleHandler(tornado.web.RequestHandler):
     """
     Standard web handler that returns the index page
     """
+    @tornado.web.authenticated
     def get(self,assignment_id, language_id):
         try:
             sample = engine.execute('SELECT initial_code FROM coding_assignment_default \
@@ -103,6 +105,7 @@ class RextesterHandler(tornado.web.RequestHandler):
     This handler will relay post messages to rextester API in order to avoid cross domain issues.
     Rextester API is an online service for compiling/running code
     """
+    @tornado.web.authenticated
     def post(self):
         data = json.loads(self.request.body)
         code = data['Program']
