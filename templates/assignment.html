@@ -6,11 +6,14 @@
 
 {% block content %}
 
+    <div id="counter"></div>
+
     <div class="page-header">
         <h1>{{ title }}</h1>
     </div>
     <input type='hidden' id='assignment_id' value="{{ assignment_id }}">
     <p class="lead">{{ details }}</p>
+
     <p>
         <select class="form-control" id="language-select">
             <option value="text/x-csharp" selected="selected">C#</option>
@@ -24,8 +27,14 @@
     </div>
     </p>
     <p>
-        <a class="btn btn-primary btn-lg" id="run_button" role="button">Run</a>
-        <a class="btn btn-primary btn-lg" id="submit_button" role="button">Submit</a>
+        <form action="/assignment/1" method="post" id="test_form">
+            <fieldset>
+                <input class="text-input" id="code_area" name="code_area" type="text" hidden="true" value="">
+            </fieldset>
+            <a class="btn btn-primary btn-lg" id="run_button" role="button">Run</a>
+            <input id="submit_button" class="btn btn-primary btn-lg" type="submit" value="Submit" tabindex="3">
+
+        </form>
     </p>
 
 
@@ -41,5 +50,6 @@
 
 
 {% block custom_js %}
+<script src="../static/js/jquery.countdown.js"></script>
 <script src="../static/js/main.js"></script>
 {% end %}

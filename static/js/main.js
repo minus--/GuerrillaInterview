@@ -16,6 +16,9 @@ function set_language(language_code, editor) {
 /*
  Document initialization
  */
+
+
+
 $(document).ready(function() {
     var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: true,
@@ -24,6 +27,13 @@ $(document).ready(function() {
         continueComments: "Enter",
         extraKeys: {"Ctrl-Q": "toggleComment"}
         });
+
+    $("#counter").countdown("2015/12/11 13:30", function(event) {
+            $(this).text(
+                  event.strftime('%M:%S')
+             );
+           });
+
     var language_code = 1;
     set_language(language_code,editor);
     $('#language-select').change(function(){
@@ -46,7 +56,7 @@ $(document).ready(function() {
         set_language(language_code,editor);
     });
 
-    $('#submit_button').on('click', function(e) {
+/*    $('#submit_button').on('click', function(e) {
         e.preventDefault();
         alert("submit");
 
@@ -70,6 +80,10 @@ $(document).ready(function() {
 
             }
         });
+    });*/
+
+    $('#code').on("change", function(cm, change) {
+       $('#code_area').setValue(cm.getValue());
     });
 
     $('#run_button').on('click', function(e) {

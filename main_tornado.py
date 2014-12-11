@@ -29,6 +29,16 @@ def check_permission(password, username):
     return False
 
 
+def check_token_validity(token, timeout):
+    if token is None:
+        return True
+    else:
+        if (time.time() - float(token)) > float(timeout):
+            return False
+        else:
+            return True
+
+
 class BaseHandler(tornado.web.RequestHandler):
         def get_current_user(self):
             return self.get_secure_cookie("user")
@@ -80,25 +90,48 @@ class AssignmentHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self,assignment_id=1):
-        self.set_secure_cookie("question", str(time.time()))
-        try:
-            assignment = engine.execute('SELECT title, details FROM coding_assignment WHERE id = %s'
-                                        % assignment_id).fetchone()
+        token_id = 'assignment_%s' % assignment_id
+        token = self.get_secure_cookie(token_id)
 
-            self.render("assignment.html", title=assignment.title, details=assignment.details, assignment_id= assignment_id)
-        except Exception as ex:
-            print ex
+        if check_token_validity(token, 30):
+            if token is None:
+                self.set_secure_cookie(token_id, str(time.time()))
+            try:
+                assignment = engine.execute('SELECT title, details FROM coding_assignment WHERE id = %s'
+                                            % assignment_id).fetchone()
+
+                self.render("assignment.html", title=assignment.title, details=assignment.details,
+                            assignment_id=assignment_id)
+            except Exception as ex:
+                print ex
+        else:
+            self.render("login.html")
 
     @tornado.web.authenticated
     def post(self,assignment_id=1):
-        timer = self.get_secure_cookie("question")
-        if (time.time() - float(timer)) > 30:
-            print "Expired"
+        token_id = 'assignment_%s' % assignment_id
+        timer = self.get_secure_cookie(token_id)
+        if timer is not None:
+            user_code = self.get_argument("code_area", "")
+            print user_code
+            if (time.time() - float(timer)) > 30:
+                self.clear_cookie(token_id)
+                self.redirect("/login")
+            else:
+                self.clear_cookie(token_id)
+                self.redirect("/list")
         else:
-            print "Did not expire"
+            self.redirect("/login")
 
-        self.clear_cookie("question")
-        self.redirect("/list")
+
+class ExpiredAssignmentHandler(BaseHandler):
+    """
+    Standard web handler that returns the index page
+    """
+    @tornado.web.authenticated
+    def get(self,assignment_id=1):
+        pass
+
 
 class DefaultSampleHandler(BaseHandler):
     """
@@ -162,7 +195,7 @@ class Application(tornado.web.Application):
             "cookie_secret": config.cookie_secret,
             "login_url": "/login"
             }
-        tornado.web.Application.__init__(self, handlers, debug=True, **settings)
+        tornado.web.Application.__init__(self, handlers, **settings)
 
 
 if __name__ == '__main__':

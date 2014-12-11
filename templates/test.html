@@ -1,0 +1,27 @@
+{% extends "base_connected.html" %}
+
+{% block custom_css %}
+
+{% end %}
+
+{% block content %}
+<form action="/test/1" method="post" id="test_form">
+    <fieldset>
+        <label for="username">Username</label>
+        <input class="text-input" id="username" name="username" type="text" value="">
+    </fieldset>
+
+    <fieldset>
+        <label for="code_area">Code</label>
+        <input class="text-input" id="code_area" name="code" type="text" hidden="true" value="">
+    </fieldset>
+
+    <div id="form_btn">
+        <input id="submit-btn" class="btn btn-blue" type="submit" value="Submit" tabindex="3">
+    </div>
+</form>
+{% end %}
+
+{% block custom_css %}
+
+{% end %}
