@@ -61,7 +61,7 @@ class LoginHandler(BaseHandler):
         auth = check_permission(password, username)
         if auth:
             self.set_current_user(username)
-            self.redirect(self.get_argument("next", u"assignment/1"))
+            self.redirect(self.get_argument("next", u"/list"))
         else:
             error_msg = u"?error=" + tornado.escape.url_escape("Login incorrect")
             self.redirect(u"/login")
@@ -90,9 +90,10 @@ class AssignmentHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self,assignment_id=1):
-        token_id = 'assignment_%s' % assignment_id
+        user = self.get_secure_cookie("user")
+        user = user.replace('@', '_').replace('"', '')
+        token_id = '%s_assignment_%s' % (user, assignment_id)
         token = self.get_secure_cookie(token_id)
-
         if check_token_validity(token, 30):
             if token is None:
                 self.set_secure_cookie(token_id, str(time.time()))
@@ -109,7 +110,9 @@ class AssignmentHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self,assignment_id=1):
-        token_id = 'assignment_%s' % assignment_id
+        user = self.get_secure_cookie("user")
+        user = user.replace('@', '_').replace('"', '')
+        token_id = '%s_assignment_%s' % (user, assignment_id)
         timer = self.get_secure_cookie(token_id)
         if timer is not None:
             user_code = self.get_argument("code_area", "")
